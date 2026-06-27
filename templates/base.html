@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Blue Letter</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="logo-area">
+        <h1>💌 Blue Letter</h1>
+        <p>{{ current_user.username }}</p>
+    </div>
+
+    <div class="menu">
+
+        <a href="{{ url_for('home') }}">
+            🏠 홈
+        </a>
+
+        <a href="{{ url_for('write_letter') }}">
+            ✍️ 편지쓰기
+        </a>
+
+        <a href="{{ url_for('inbox') }}">
+            📥 받은편지함
+
+            {% if unread_count and unread_count > 0 %}
+                <span class="badge">
+                    {{ unread_count }}
+                </span>
+            {% endif %}
+        </a>
+
+        <a href="{{ url_for('sent_box') }}">
+            📤 보낸편지함
+        </a>
+
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}">
+            🛠 관리자
+        </a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}">
+            🚪 로그아웃
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="main-content">
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="flash-message">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+
+
+<div id="notification-popup"></div>
+
+
+<script>
+
+let latestCount = {{ unread_count if unread_count else 0 }};
+
+async function checkNewLetters() {
+
+    try {
+
+        const response = await axios.get("/api/check-notification");
+
+        const count = response.data.unread_count;
+
+        if(count > latestCount){
+
+            const popup = document.getElementById(
+                "notification-popup"
+            );
+
+            popup.innerHTML =
+                "새 편지가 도착했습니다 💌";
+
+            popup.classList.add("show");
+
+            setTimeout(() => {
+                popup.classList.remove("show");
+            }, 4000);
+
+            latestCount = count;
+
+            const badge =
+                document.querySelector(".badge");
+
+            if(badge){
+                badge.innerText = count;
+            }
+        }
+
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+
+setInterval(
+    checkNewLetters,
+    5000
+);
+
+</script>
+
+</body>
+</html>
