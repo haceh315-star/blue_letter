@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-title">
+    <h1>홈</h1>
+    <p>최근 활동과 편지 통계를 확인할 수 있습니다.</p>
+</div>
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <h3>읽지 않은 편지</h3>
+        <div class="stat-number">
+            {{ unread_count }}
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <h3>받은 편지</h3>
+        <div class="stat-number">
+            {{ received_count }}
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <h3>보낸 편지</h3>
+        <div class="stat-number">
+            {{ sent_count }}
+        </div>
+    </div>
+
+</div>
+
+
+<div class="dashboard-grid">
+
+    <div class="card">
+
+        <div class="card-header">
+            <h2>최근 받은 편지</h2>
+            <a href="{{ url_for('inbox') }}"
+               class="small-button">
+                전체보기
+            </a>
+        </div>
+
+        {% if recent_letters %}
+
+            {% for letter in recent_letters %}
+
+            <div class="letter-preview">
+
+                <div class="letter-top">
+
+                    <div>
+                        <h3>{{ letter.title }}</h3>
+
+                        <p class="sender">
+                            {{ letter.sender.username }}
+                        </p>
+                    </div>
+
+                    <div>
+                        {% if letter.is_read %}
+                            <span class="read-badge">
+                                읽음
+                            </span>
+                        {% else %}
+                            <span class="unread-badge">
+                                새 편지
+                            </span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <p class="preview-content">
+                    {{ letter.content[:120] }}...
+                </p>
+
+                <div class="letter-actions">
+
+                    <a href="{{ url_for(
+                        'view_letter',
+                        letter_id=letter.id
+                    ) }}"
+                    class="action-button">
+                        열기
+                    </a>
+
+                    <a href="{{ url_for(
+                        'reply_letter',
+                        letter_id=letter.id
+                    ) }}"
+                    class="action-button secondary">
+                        답장
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+                아직 받은 편지가 없습니다.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="card-header">
+            <h2>최근 알림</h2>
+        </div>
+
+        {% if current_user.notifications %}
+
+            {% for notification in current_user.notifications[-5:]|reverse %}
+
+            <div class="notification-item">
+
+                <div class="notification-message">
+                    {{ notification.message }}
+                </div>
+
+                <div class="notification-time">
+                    {{ notification.created_at.strftime(
+                        "%Y-%m-%d %H:%M"
+                    ) }}
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+                새로운 알림이 없습니다.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
